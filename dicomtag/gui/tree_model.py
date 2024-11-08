@@ -98,24 +98,19 @@ class DICOMTreeModel(QAbstractItemModel):
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         if index.isValid() and role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
-            if index.column() == 2:  # Value column
-                logger.debug(
-                    f"Attempting to set value for {item.tag}: {value}")
+            logger.debug(f"Attempting to set value for {item.tag}: {value}")
 
-                # check if data_set is present
-                if self.dicom_dataset is None:
-                    logger.error("DICOM dataset is not loaded.")
-                    return False
-                # Log current available tags in the dataset for debugging
-                logger.debug(
-                    f"Available tags in dataset: {list(self.dicom_dataset.keys())}")
-                if item.tag in self.dicom_dataset:
-                    self.dicom_dataset[item.tag].value = value
+            # Check if the tag exists in the dataset
+            if item.tag in self.dicom_dataset:
+                try:
+                    item.element.value = value  # Attempt to set the new value
+                    # Notify view of change
                     self.dataChanged.emit(index, index)
                     return True
-                else:
-                    logger.error(
-                        f"KeyError: Tag {item.tag} not found in DICOM dataset.")
+                except Exception as e:
+                    logger.error(f"Error setting value for {item.tag}: {e}")
+            else:
+                logger.warning(f"Tag {item.tag} not found in DICOM dataset.")
         return False
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):

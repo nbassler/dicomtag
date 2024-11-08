@@ -2,9 +2,7 @@
 
 import pydicom
 import logging
-
 from pydicom.dataset import Dataset
-
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -13,7 +11,8 @@ logger = logging.getLogger(__name__)
 class DICOMDataModel:
     def __init__(self):
         self.dicom_data: Optional[Dataset] = None
-        self.filename = None  # Initialize the filename attribute
+        # Initialize the filename attribute
+        self.filename: Optional[str] = None
 
     def load_dicom_file(self, filename: str) -> None:
         """Loads a DICOM file and stores it as a pydicom Dataset."""
@@ -57,3 +56,15 @@ class DICOMDataModel:
             else:
                 logger.warning(f"Tag {tag} not found in DICOM data.")
         return False
+
+    def get_all_tags(self):
+        """Returns all tags in the dataset."""
+        if self.dicom_data:
+            return self.dicom_data.keys()
+        return []
+
+    def clear_data(self):
+        """Clears the currently loaded DICOM data."""
+        self.dicom_data = None
+        self.filename = None
+        logger.info("Cleared DICOM data.")
