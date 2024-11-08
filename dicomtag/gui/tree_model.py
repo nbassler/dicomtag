@@ -44,7 +44,7 @@ class DICOMTreeModel(QAbstractItemModel):
     def __init__(self, dicom_data_model, parent=None):
         super().__init__(parent)
         self.dicom_data_model = dicom_data_model
-        self.dicom_dataset = dicom_data_model.dicom_data
+        self.dicom_dataset = dicom_data_model.dicom_data if dicom_data_model.dicom_data is not None else {}
         self.items = [DICOMTreeItem(tag, self.dicom_dataset[tag])
                       for tag in self.dicom_dataset.keys()]
 
@@ -88,19 +88,31 @@ class DICOMTreeModel(QAbstractItemModel):
     def flags(self, index):
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
-        # Enable editing only for column 2 (Value)
-        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | (
-            Qt.ItemFlag.ItemIsEditable if index.column() == 2 else Qt.ItemFlag.NoItemFlags
-        )
+        # Enable editing only for column 2 (Value) if it's not a sequence
+        item = self.items[index.row()]
+        if index.column() == 2 and not item.is_sequence():
+            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable
+        # Non-editable for sequences
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         if index.isValid() and role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
             if index.column() == 2:  # Value column
-                item.element.value = value
-                # Notify the view that data has changed
-                self.dataChanged.emit(index, index)
-                return True
+                # Only update if the new value is different from the current value
+                if str(value) != str(item.element.value):  # Compare as strings
+                    item.element.value = value
+
+                    # Update the corresponding value in the DICOM dataset if the tag exists
+                    if item.tag in self.dicom_dataset:
+                        self.dicom_dataset[item.tag].value = value
+                    else:
+                        logger.error(
+                            f"KeyError: Tag {item.tag} not found in DICOM dataset.")
+
+                    # Notify the view that data has changed
+                    self.dataChanged.emit(index, index)
+                    return True
         return False
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
