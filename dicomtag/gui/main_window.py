@@ -2,7 +2,7 @@
 
 from PyQt6.QtWidgets import QMainWindow, QTreeView, QVBoxLayout, QWidget, QHeaderView
 import logging
-from dicomtag.gui.tree_model import DICOMTreeModel
+from dicomtag.gui.tree_model import DICOMTreeModel, CustomTreeView
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +28,11 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(central_widget)
 
         # QTreeView for displaying DICOM tags
-        self.tree_view = QTreeView()
+        self.tree_view = CustomTreeView()
         self.tree_view.setRootIsDecorated(False)
         self.tree_view.setAlternatingRowColors(True)
+        # self.tree_view.setHorizontalScrollBarPolicy(
+        #     Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         # Set up the custom tree model for the QTreeView
         self.tree_model = DICOMTreeModel(self.dicom_data_model)
@@ -39,12 +41,24 @@ class MainWindow(QMainWindow):
         # Add the tree view to the layout
         layout.addWidget(self.tree_view)
 
-        # Resize columns to fit the content initially
-        self.tree_view.header().setSectionResizeMode(
-            0, QHeaderView.ResizeMode.ResizeToContents)
-        self.tree_view.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.tree_view.header().setSectionResizeMode(
-            2, QHeaderView.ResizeMode.ResizeToContents)
+        # Resize columns to fit their contents
+        self.tree_view.resizeColumnToContents(0)  # Resize Tag column
+        self.tree_view.resizeColumnToContents(1)  # Resize VR column
+
+        # Prevent the last section from stretching
+        header = self.tree_view.header()
+        header.setStretchLastSection(True)
+
+        # Set the horizontal header to allow for scrollable content
+        header.setSectionsMovable(True)
+
+        # Enable editing on double-click or single click in column 2
+        self.tree_view.setEditTriggers(
+            QTreeView.EditTrigger.DoubleClicked | QTreeView.EditTrigger.EditKeyPressed)
+
+        # Adjust the layout to ensure it properly reflects the sizes
+        self.tree_view.setSizeAdjustPolicy(
+            QTreeView.SizeAdjustPolicy.AdjustToContents)
 
         # Set default window size
         self.resize(800, 600)
