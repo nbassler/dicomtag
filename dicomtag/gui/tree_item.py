@@ -15,6 +15,21 @@ class DICOMTreeItem:
             logger.debug(f"Initializing children for sequence: {tag}")
             self._initialize_children()  # Recursively create children for sequences
 
+    def is_sequence(self):
+        """Check if the element is a sequence."""
+        return hasattr(self.element, "VR") and self.element.VR == "SQ"
+
+    def _initialize_children(self):
+        """Create children for each dataset item in the sequence."""
+        for i, seq_dataset in enumerate(self.element.value):
+            # Recursively add sub-items within the sequence item
+            # Create a parent item for each sequence
+            for sub_tag in seq_dataset.keys():
+                sub_element = seq_dataset[sub_tag]
+                sub_item_data = DICOMTreeItem(
+                    sub_tag, sub_element, self.parent)
+                self.append_child(sub_item_data)
+
     def append_child(self, item: 'DICOMTreeItem'):
         """Add a child item to the current item."""
         item.parent_item = self  # Ensure child has correct parent
@@ -30,36 +45,27 @@ class DICOMTreeItem:
         """Get the number of child items."""
         return len(self.child_items)
 
-    def is_sequence(self):
-        """Check if the element is a sequence."""
-        return hasattr(self.element, "VR") and self.element.VR == "SQ"
+    def child_number(self) -> int:
+        if self.parent_item:
+            return self.parent_item.child_items.index(self)
+        return 0
 
-    def _initialize_children(self):
-        """Create children if this item is a sequence."""
-        for i, dataset in enumerate(self.element.value):
-            seq_label = f"Item {i + 1}"
-            # Sequence item as parent
-            seq_item = DICOMTreeItem(seq_label, dataset, self)
-            self.append_child(seq_item)
-            # Recursively add child items for each sequence
-            for sub_tag in dataset.keys():
-                sub_element = dataset[sub_tag]
-                child = DICOMTreeItem(sub_tag, sub_element, seq_item)
-                logger.debug(f"Adding child: {sub_tag} to sequence {self.tag}")
-                seq_item.append_child(child)
+    def column_count(self) -> int:
+        return 3  # Tag, VR, Value
 
-    def get_data(self, column: int):
+    def data(self, column: int):
         """Get the data for the specified column."""
         if column == 0:
             # Display tag ID and keyword
+            logger.debug(f"Getting data for tag: '{self.tag}'")
             keyword = keyword_for_tag(self.tag) or "Unknown"
-            return f"{self.tag} ({keyword})"
+            return f"{self.tag}   {keyword}"
         elif column == 1:
             # Display VR type if available
             return self.element.VR
         elif column == 2:
             # Display the value directly, label as "Sequence" if it's an SQ element
-            return str(self.element.value) if not self.is_sequence() else "Sequence"
+            return str(self.element.value) if not self.is_sequence() else "(Sequence)"
         return None
 
     def set_data(self, column: int, value):
