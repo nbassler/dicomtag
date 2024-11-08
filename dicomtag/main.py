@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QApplication
 from dicomtag.gui.main_window import MainWindow
 from dicomtag.model.dicom_model import DICOMDataModel
 
-__version__ = "0.1.0"  # Replace with dynamic version if using setuptools_scm
+__version__ = "0.1.0"
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -24,7 +24,6 @@ def configure_logging(verbosity: int):
     else:
         logging_level = logging.ERROR
     logging.basicConfig(level=logging_level)
-    logger.debug(f"Logging level set to {logging.getLevelName(logging_level)}")
 
 
 def main(args=None):
@@ -44,14 +43,13 @@ def main(args=None):
     # Initialize the application
     app = QApplication(sys.argv)
 
-    # Create the DICOM data model and load the specified file, if provided
+    # Create the DICOM data model
     dicom_data_model = DICOMDataModel()
+
+    # Load the specified file if provided
     if args.inputfile:
         logger.info(f"Loading DICOM file: {args.inputfile}")
         dicom_data_model.load_dicom_file(args.inputfile)
-    else:
-        logger.warning(
-            "No input file specified. The application will start without a DICOM file loaded.")
 
     # Create and show the main window, passing the DICOM model
     window = MainWindow(dicom_data_model)

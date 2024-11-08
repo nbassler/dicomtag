@@ -2,10 +2,8 @@
 
 import os
 import logging
-
 from PyQt6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QTreeView, QVBoxLayout, QWidget
 from PyQt6.QtGui import QAction
-
 from dicomtag.gui.tree_model import DICOMTreeItem, DICOMTreeModel, CustomTreeView
 from dicomtag.model.dicom_model import DICOMDataModel
 
@@ -19,7 +17,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("DICOM Tag Viewer")
 
         # Use the DICOM data model passed from main
-        self.dicom_data_model = DICOMDataModel()
+        self.dicom_data_model = dicom_data_model
 
         # Set up the main layout and tree view
         self._setup_ui()
@@ -37,8 +35,6 @@ class MainWindow(QMainWindow):
         self.tree_view = CustomTreeView()
         self.tree_view.setRootIsDecorated(False)
         self.tree_view.setAlternatingRowColors(True)
-        # self.tree_view.setHorizontalScrollBarPolicy(
-        #     Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         # Set up the custom tree model for the QTreeView
         self.tree_model = DICOMTreeModel(self.dicom_data_model)
@@ -61,10 +57,6 @@ class MainWindow(QMainWindow):
         # Enable editing on double-click or single click in column 2
         self.tree_view.setEditTriggers(
             QTreeView.EditTrigger.DoubleClicked | QTreeView.EditTrigger.EditKeyPressed)
-
-        # Adjust the layout to ensure it properly reflects the sizes
-        self.tree_view.setSizeAdjustPolicy(
-            QTreeView.SizeAdjustPolicy.AdjustToContents)
 
         # Set default window size
         self.resize(800, 600)
@@ -89,31 +81,28 @@ class MainWindow(QMainWindow):
         file_menu.addAction(exit_action)
 
     def open_file(self):
-        # Example option; adjust as necessary
-        options = QFileDialog.Option.DontUseNativeDialog
-
         filename, _ = QFileDialog.getOpenFileName(
-            self, "Open DICOM File", "", "DICOM Files (*.dcm);;All Files (*)", options=options)
+            self, "Open DICOM File", "", "DICOM Files (*.dcm);;All Files (*)")
         if filename:
+            logger.info(f"Loading DICOM file: {filename}")
             self.dicom_data_model.load_dicom_file(filename)
-            self.tree_model.items = [DICOMTreeItem(
-                tag, self.dicom_data_model.dicom_data[tag]) for tag in self.dicom_data_model.dicom_data.keys()]
-            self.tree_view.reset()  # Refresh the view to reflect the new model data
 
-            # Resize columns based on their content
-            self.tree_view.resizeColumnToContents(0)  # Resize Tag column
-            self.tree_view.resizeColumnToContents(1)  # Resize VR column
+            # Ensure that the model updates to reflect the new data
+            self.update_tree_model()  # Update the tree model to show new data
+
+    def update_tree_model(self):
+        # Update the tree model with new data
+        self.tree_model.items = [DICOMTreeItem(
+            tag, self.dicom_data_model.dicom_data[tag]) for tag in self.dicom_data_model.dicom_data.keys()]
+        self.tree_view.reset()  # Refresh the view to reflect the new model data
+
+        # Resize columns based on their content
+        self.tree_view.resizeColumnToContents(0)  # Resize Tag column
+        self.tree_view.resizeColumnToContents(1)  # Resize VR column
 
     def save_as_file(self):
-        # Assuming you have a filename attribute
-        original_filename = self.dicom_data_model.filename
-        if not original_filename:
-            QMessageBox.warning(self, "Warning", "No file is loaded to save.")
-            return
-
+        original_filename = self.dicom_data_model.filename or "untitled.dcm"
         new_filename, _ = QFileDialog.getSaveFileName(
             self, "Save DICOM File", f"{os.path.splitext(original_filename)[0]}_EDITED.dcm", "DICOM Files (*.dcm);;All Files (*)")
         if new_filename:
             self.dicom_data_model.save_dicom_file(new_filename)
-            QMessageBox.information(
-                self, "Success", "File saved successfully.")

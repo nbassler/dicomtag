@@ -99,20 +99,23 @@ class DICOMTreeModel(QAbstractItemModel):
         if index.isValid() and role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
             if index.column() == 2:  # Value column
-                # Only update if the new value is different from the current value
-                if str(value) != str(item.element.value):  # Compare as strings
-                    item.element.value = value
+                logger.debug(
+                    f"Attempting to set value for {item.tag}: {value}")
 
-                    # Update the corresponding value in the DICOM dataset if the tag exists
-                    if item.tag in self.dicom_dataset:
-                        self.dicom_dataset[item.tag].value = value
-                    else:
-                        logger.error(
-                            f"KeyError: Tag {item.tag} not found in DICOM dataset.")
-
-                    # Notify the view that data has changed
+                # check if data_set is present
+                if self.dicom_dataset is None:
+                    logger.error("DICOM dataset is not loaded.")
+                    return False
+                # Log current available tags in the dataset for debugging
+                logger.debug(
+                    f"Available tags in dataset: {list(self.dicom_dataset.keys())}")
+                if item.tag in self.dicom_dataset:
+                    self.dicom_dataset[item.tag].value = value
                     self.dataChanged.emit(index, index)
                     return True
+                else:
+                    logger.error(
+                        f"KeyError: Tag {item.tag} not found in DICOM dataset.")
         return False
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
