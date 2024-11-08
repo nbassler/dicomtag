@@ -2,10 +2,9 @@
 
 import os
 import logging
-from PyQt6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QTreeView, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QMainWindow, QFileDialog, QTreeView, QVBoxLayout, QWidget, QAbstractItemView
 from PyQt6.QtGui import QAction
 from dicomtag.gui.tree_model import DICOMTreeItem, DICOMTreeModel, CustomTreeView
-from dicomtag.model.dicom_model import DICOMDataModel
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +34,9 @@ class MainWindow(QMainWindow):
         self.tree_view = CustomTreeView()
         self.tree_view.setRootIsDecorated(False)
         self.tree_view.setAlternatingRowColors(True)
+        self.tree_view.setHorizontalScrollMode(
+            QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.tree_view.setAllColumnsShowFocus(True)
 
         # Set up the custom tree model for the QTreeView
         self.tree_model = DICOMTreeModel(self.dicom_data_model)
@@ -91,12 +93,10 @@ class MainWindow(QMainWindow):
             self.update_tree_model()  # Update the tree model to show new data
 
     def update_tree_model(self):
-        # Update the tree model with new data
-        self.tree_model.items = [DICOMTreeItem(
-            tag, self.dicom_data_model.dicom_data[tag]) for tag in self.dicom_data_model.dicom_data.keys()]
+        """Update the tree model to reflect changes in the DICOM data."""
+        self.tree_model.update_model_data()
+        # Refresh view and resize columns
         self.tree_view.reset()  # Refresh the view to reflect the new model data
-
-        # Resize columns based on their content
         self.tree_view.resizeColumnToContents(0)  # Resize Tag column
         self.tree_view.resizeColumnToContents(1)  # Resize VR column
 
