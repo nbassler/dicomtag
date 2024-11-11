@@ -33,19 +33,6 @@ class DICOMTreeModel(QAbstractItemModel):
             item = DICOMTreeItem(tag, element, parent)
             parent.append_child(item)
 
-            # Handle sequence elements recursively
-            if hasattr(element, 'VR') and element.VR == "SQ":
-                logger.debug(f"Adding sequence children for tag: {tag}")
-                # element.value is a list of datasets
-                for i, seq_dataset in enumerate(element.value):
-                    # Recursively add sub-items within the sequence item
-                    # Create a parent item for each sequence
-                    for sub_tag in seq_dataset.keys():
-                        sub_element = seq_dataset[sub_tag]
-                        sub_item_data = DICOMTreeItem(
-                            sub_tag, sub_element, parent)
-                        item.append_child(sub_item_data)
-
     def get_item(self, index: QModelIndex = QModelIndex()) -> DICOMTreeItem:
         if index.isValid():
             item: DICOMTreeItem = index.internalPointer()
