@@ -6,7 +6,7 @@ on:
       - 'v*'  # Triggers on tags starting with 'v', e.g., v1.0.0
 
 permissions:
-  contents: write-all
+  contents: write
 
 jobs:
   build-linux:
@@ -70,10 +70,10 @@ jobs:
           path: dist/windows/
 
   release:
-    name: Create GitHub Release
-    needs: [build-linux, build-windows]  # Wait for both build jobs to finish
+    needs: build
     runs-on: ubuntu-latest
-
+    permissions:
+        contents: write  # Ensure write permissions are explicitly declared
     steps:
       - name: Download Linux Artifacts
         uses: actions/download-artifact@v4
@@ -88,6 +88,7 @@ jobs:
           path: ./dist/windows
 
       - name: Create GitHub Release
+        id: create_release  # Ensure an ID is used to access outputs
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -103,7 +104,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/linux/dicomtag  # Linux binary
+          asset_path: ./dist/linux/dicomtag
           asset_name: dicomtag-linux
           asset_content_type: application/octet-stream
 
@@ -113,6 +114,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/windows/dicomtag.exe  # Windows binary
+          asset_path: ./dist/windows/dicomtag.exe
           asset_name: dicomtag-windows.exe
           asset_content_type: application/octet-stream
