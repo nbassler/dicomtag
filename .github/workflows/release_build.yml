@@ -6,12 +6,9 @@ on:
       - 'v*'  # Triggers on tags starting with 'v', e.g., v1.0.0
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]  # Build on both Linux and Windows
-
-    runs-on: ${{ matrix.os }}
+  build-linux:
+    name: Build Linux Executable
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -27,36 +24,65 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
 
-      - name: Build Executable (Linux)
-        if: ${{ runner.os == 'Linux' }}
+      - name: Build Executable
         run: |
-            pyinstaller --onefile --name dicomtag dicomtag/main.py
-            mkdir -p dist/linux
-            mv dist/dicomtag dist/linux/
-
-      - name: Build Executable (Windows)
-        if: ${{ runner.os == 'Windows' }}
-        run: |
-            pyinstaller --onefile --name dicomtag.exe --noconsole dicomtag/main.py
-            mkdir -p dist/windows
-            mv dist/dicomtag.exe dist/windows/
+          pyinstaller --onefile --name dicomtag dicomtag/main.py
+          mkdir -p dist/linux
+          mv dist/dicomtag dist/linux/
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: executables
-          path: dist/
+          name: linux-executable
+          path: dist/linux/
+
+  build-windows:
+    name: Build Windows Executable
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+
+      - name: Build Executable
+        run: |
+          pyinstaller --onefile --name dicomtag.exe --noconsole dicomtag/main.py
+          mkdir -p dist/windows
+          mv dist/dicomtag.exe dist/windows/
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-executable
+          path: dist/windows/
 
   release:
-    needs: build  # Wait for the build job to complete
+    name: Create GitHub Release
+    needs: [build-linux, build-windows]  # Wait for both build jobs to finish
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download Build Artifacts
+      - name: Download Linux Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: executables  # Match the uploaded artifact name
-          path: ./dist       # Extract the artifact to ./dist
+          name: linux-executable
+          path: ./dist/linux
+
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-executable
+          path: ./dist/windows
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
