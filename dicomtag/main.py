@@ -3,11 +3,13 @@
 import sys
 import argparse
 import logging
+
 from PyQt6.QtWidgets import QApplication
+
 from dicomtag.gui.main_window import MainWindow
 from dicomtag.model.dicom_model import DICOMDataModel
+from dicomtag.__version__ import __version__
 
-__version__ = "0.1.0"
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -48,6 +50,13 @@ def main(args=None):
 
     # Load the specified file if provided
     if args.inputfile:
+        # if a filename is provided from command line, check if it exists or exit otherwise
+        try:
+            with open(args.inputfile):
+                pass
+        except FileNotFoundError:
+            logger.error(f"File not found: {args.inputfile}")
+            sys.exit(1)
         logger.info(f"Loading DICOM file: {args.inputfile}")
         dicom_data_model.load_dicom_file(args.inputfile)
 
