@@ -6,7 +6,7 @@ on:
       - 'v*'  # Triggers on tags starting with 'v', e.g., v1.0.0
 
 permissions:
-  contents: write
+  contents: write-all
 
 jobs:
   build-linux:
