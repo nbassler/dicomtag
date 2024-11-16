@@ -43,3 +43,44 @@ jobs:
         with:
           name: executables
           path: dist/
+
+  release:
+      needs: build  # Wait for the build job
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Download Build Artifacts
+          uses: actions/download-artifact@v3
+          with:
+            name: executables  # Match the uploaded artifact name
+            path: ./dist       # Extract the artifact to ./dist
+
+        - name: Create GitHub Release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag_name: ${{ github.ref_name }}
+            release_name: Release ${{ github.ref_name }}
+            draft: false
+            prerelease: false
+
+        - name: Upload Linux Binary
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: ./dist/linux/dicomtag  # Linux binary
+            asset_name: dicomtag-linux
+            asset_content_type: application/octet-stream
+
+        - name: Upload Windows Binary
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: ./dist/windows/dicomtag.exe  # Windows binary
+            asset_name: dicomtag-windows.exe
+            asset_content_type: application/octet-stream
