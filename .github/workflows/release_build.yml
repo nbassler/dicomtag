@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -39,7 +39,7 @@ jobs:
             mv dist/dicomtag.exe dist/windows/
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: executables
           path: dist/
@@ -50,7 +50,7 @@ jobs:
 
       steps:
         - name: Download Build Artifacts
-          uses: actions/download-artifact@v3
+          uses: actions/download-artifact@latest
           with:
             name: executables  # Match the uploaded artifact name
             path: ./dist       # Extract the artifact to ./dist
@@ -66,7 +66,7 @@ jobs:
             prerelease: false
 
         - name: Upload Linux Binary
-          uses: actions/upload-release-asset@v1
+          uses: actions/upload-release-asset@latest
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
@@ -76,7 +76,7 @@ jobs:
             asset_content_type: application/octet-stream
 
         - name: Upload Windows Binary
-          uses: actions/upload-release-asset@v1
+          uses: actions/upload-release-asset@latest
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
