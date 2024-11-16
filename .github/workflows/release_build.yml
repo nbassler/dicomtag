@@ -27,13 +27,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
 
-      - name: Build Executable
+      - name: Build Executable (Linux)
+        if: ${{ runner.os == 'Linux' }}
         run: |
-          if [ "${{ runner.os }}" == "Linux" ]; then
             pyinstaller --onefile --name dicomtag dicomtag/main.py
             mkdir -p dist/linux
             mv dist/dicomtag dist/linux/
-          else
+
+      - name: Build Executable (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        run: |
             pyinstaller --onefile --name dicomtag.exe --noconsole dicomtag/main.py
             mkdir -p dist/windows
             mv dist/dicomtag.exe dist/windows/
@@ -70,7 +73,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.Create_GitHub_Release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./dist/linux/dicomtag  # Linux binary
           asset_name: dicomtag-linux
           asset_content_type: application/octet-stream
@@ -80,7 +83,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.Create_GitHub_Release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./dist/windows/dicomtag.exe  # Windows binary
           asset_name: dicomtag-windows.exe
           asset_content_type: application/octet-stream
