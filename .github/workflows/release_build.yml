@@ -7,7 +7,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # You can also add a separate Windows runner if needed.
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]  # Build on both Linux and Windows
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
@@ -23,34 +27,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
 
-      - name: Build Linux Executable
-        if: startsWith(matrix.os, 'ubuntu')
+      - name: Build Executable
         run: |
-          pyinstaller --onefile --name dicomtag dicomtag/main.py
-          mkdir -p dist/linux
-          mv dist/dicomtag dist/linux/
-
-      - name: Build Windows Executable
-        runs-on: windows-latest
-        steps:
-          - name: Checkout repository
-            uses: actions/checkout@v3
-
-          - name: Set up Python
-            uses: actions/setup-python@v4
-            with:
-              python-version: '3.11'
-
-          - name: Install dependencies
-            run: |
-              python -m pip install --upgrade pip
-              pip install pyinstaller
-
-          - name: Build Windows Executable
-            run: |
-              pyinstaller --onefile --name dicomtag.exe --noconsole dicomtag/main.py
-              mkdir -p dist/windows
-              mv dist/dicomtag.exe dist/windows/
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            pyinstaller --onefile --name dicomtag dicomtag/main.py
+            mkdir -p dist/linux
+            mv dist/dicomtag dist/linux/
+          else
+            pyinstaller --onefile --name dicomtag.exe --noconsole dicomtag/main.py
+            mkdir -p dist/windows
+            mv dist/dicomtag.exe dist/windows/
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3

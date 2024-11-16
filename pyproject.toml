@@ -23,6 +23,14 @@ dev = [
     "yapf>=0.32.0",
 ]
 
+[project.scripts]
+dicomtag = "dicomtag.main:main" # Replace with the actual path to your entry functi
+
+[tool.pyinstaller]
+entry_script = "dicomtag/main.py"
+output_dir = "dist"
+options = ["--onefile"]
+
 [tool.setuptools]
 packages = ["dicomtag"]
 
