@@ -3,11 +3,13 @@
 import sys
 import argparse
 import logging
+
 from PyQt6.QtWidgets import QApplication
+
 from dicomtag.gui.main_window import MainWindow
 from dicomtag.model.dicom_model import DICOMDataModel
+from dicomtag.__version__ import __version__
 
-__version__ = "0.1.0"
 
 # Configure logger
 logger = logging.getLogger(__name__)

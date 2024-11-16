@@ -61,7 +61,7 @@ jobs:
 
       - name: Build Executable
         run: |
-          pyinstaller --onefile --clean --name dicomtag.exe --noconsole dicomtag/main.py
+          pyinstaller --onefile --clean --name dicomtag.exe dicomtag/main.py
           mkdir -p dist/windows
           mv dist/dicomtag.exe dist/windows/
 

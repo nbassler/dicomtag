@@ -54,3 +54,4 @@ column_limit = 127
 [tool.setuptools_scm]
 version_scheme = "post-release"
 local_scheme = "node-and-date"
+write_to = "dicomtag/__version__.py"

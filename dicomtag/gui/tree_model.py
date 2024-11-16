@@ -42,7 +42,7 @@ class DICOMTreeModel(QAbstractItemModel):
         return self.root_item
 
     # What follows are Mandatory methods for QAbstractItemModel:
-    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:  # Mandatory
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:  # Mandatory # noqa: N802
         if parent.isValid() and parent.column() > 0:
             return 0
 
@@ -51,7 +51,7 @@ class DICOMTreeModel(QAbstractItemModel):
             return 0
         return parent_item.child_count()
 
-    def columnCount(self, parent=QModelIndex()):  # Mandatory
+    def columnCount(self, parent=QModelIndex()):  # Mandatory # noqa: N802
         return 3  # Tag, Value, VR
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -68,14 +68,13 @@ class DICOMTreeModel(QAbstractItemModel):
             return QColor(Qt.GlobalColor.lightGray)
         return None
 
-    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):  # Mandatory
-        """Return the header data for the specified section, orientation, and role."""
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):  # Mandatory # noqa: N802
         if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
             headers = ["Tag", "VR", "Value"]
             return headers[section] if section < len(headers) else None
         return None
 
-    def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:  # Mandatory
+    def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:  # Mandatory # noqa: N802
         """Return the index for the specified row, column, and parent index."""
         if parent.isValid() and parent.column() != 0:
             return QModelIndex()
@@ -113,7 +112,7 @@ class DICOMTreeModel(QAbstractItemModel):
         return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
     # mandatory for editing
-    def setData(self, index: QModelIndex, value, role: int) -> bool:
+    def setData(self, index: QModelIndex, value, role: int) -> bool:  # noqa: N802
         if role != Qt.ItemDataRole.EditRole:
             return False
 
@@ -132,7 +131,7 @@ class DICOMTreeModel(QAbstractItemModel):
 class CustomTreeView(QTreeView):
     """Custom QTreeView subclass to enable single-click editing of the Value column only."""
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event):  # noqa: N802
         index = self.indexAt(event.pos())
         if index.isValid() and index.column() == 2:  # Check if it's column 2
             self.edit(index)  # Start editing the cell directly
