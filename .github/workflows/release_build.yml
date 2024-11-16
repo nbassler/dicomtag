@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Executable
         run: |
-          pyinstaller --onefile --name dicomtag dicomtag/main.py
+          pyinstaller --onefile --clean --name dicomtag dicomtag/main.py
           mkdir -p dist/linux
           mv dist/dicomtag dist/linux/
 
@@ -57,10 +57,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
+          pip install .
 
       - name: Build Executable
         run: |
-          pyinstaller --onefile --name dicomtag.exe --noconsole dicomtag/main.py
+          pyinstaller --onefile --clean --name dicomtag.exe --noconsole dicomtag/main.py
           mkdir -p dist/windows
           mv dist/dicomtag.exe dist/windows/
 
