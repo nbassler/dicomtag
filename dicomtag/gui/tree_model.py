@@ -15,8 +15,8 @@ class DICOMTreeModel(QAbstractItemModel):
         super().__init__(parent)
         self.dicom_data_model = dicom_data_model
         self.root_item = DICOMTreeItem("Root", None)
-
-        self._setup_model_data(dicom_data_model.dicom_data, self.root_item)
+        if dicom_data_model.dicom_data:
+            self._setup_model_data(dicom_data_model.dicom_data, self.root_item)
 
     def update_model_data(self):
         """Clears and rebuilds the model data."""

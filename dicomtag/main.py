@@ -48,6 +48,13 @@ def main(args=None):
 
     # Load the specified file if provided
     if args.inputfile:
+        # if a filename is provided from command line, check if it exists or exit otherwise
+        try:
+            with open(args.inputfile):
+                pass
+        except FileNotFoundError:
+            logger.error(f"File not found: {args.inputfile}")
+            sys.exit(1)
         logger.info(f"Loading DICOM file: {args.inputfile}")
         dicom_data_model.load_dicom_file(args.inputfile)
 
