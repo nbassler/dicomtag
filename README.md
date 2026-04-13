@@ -1,8 +1,10 @@
 # dicomtag
+![CI](https://github.com/nbassler/dicomtag/actions/workflows/ci.yml/badge.svg)
+![Dependabot](https://img.shields.io/badge/dependabot-active-brightgreen?logo=dependabot)
 
 A simple DICOM tag editor based on PyQt6. Runs on Linux and Windows.
 
-![image](https://github.com/user-attachments/assets/f9b9d009-1dfe-4af2-9169-33dbc011169c)
+<img width="836" height="650" alt="image" src="https://github.com/user-attachments/assets/d62ed5c9-0315-474e-84c9-d6525791ba71" />
 
 ## Features
 
