@@ -90,10 +90,18 @@ jobs:
           name: windows-executable
           path: ./dist/windows
 
+      - name: Rename binaries with platform suffix
+        run: |
+          mv ./dist/linux/dicomtag ./dist/linux/dicomtag-linux
+          mv ./dist/windows/dicomtag.exe ./dist/windows/dicomtag-windows.exe
+
       - name: Create GitHub Release and upload binaries
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
           files: |
-            ./dist/linux/dicomtag
-            ./dist/windows/dicomtag.exe
+            ./dist/linux/dicomtag-linux
+            ./dist/windows/dicomtag-windows.exe
