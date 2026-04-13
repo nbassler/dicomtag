@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QApplication
 
 from dicomtag.gui.main_window import MainWindow
 from dicomtag.model.dicom_model import DICOMDataModel
-from dicomtag.__version__ import __version__
+from dicomtag import __version__
 
 
 # Configure logger

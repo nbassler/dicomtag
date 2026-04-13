@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QAction
 from dicomtag.gui.tree_model import DICOMTreeModel, CustomTreeView
-from dicomtag.__version__ import __version__
+from dicomtag import __version__
 
 logger = logging.getLogger(__name__)
 
