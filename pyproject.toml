@@ -11,7 +11,7 @@ authors = [
 ]
 license = { text = "MIT" }
 readme = "README.md"
-dependencies = ["pydicom>=2.4.0", "PyQt6>=6.11.0"]
+dependencies = ["pydicom>=3.0.2", "PyQt6>=6.11.0"]
 dynamic = ["version"]
 
 [project.optional-dependencies]
