@@ -79,13 +79,13 @@ jobs:
       contents: write
     steps:
       - name: Download Linux Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-executable
           path: ./dist/linux
 
       - name: Download Windows Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-executable
           path: ./dist/windows
