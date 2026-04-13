@@ -60,6 +60,7 @@ jobs:
           pip install .
 
       - name: Build Executable
+        shell: bash
         run: |
           pyinstaller --onefile --clean --name dicomtag dicomtag/main.py
           mkdir -p dist/windows
