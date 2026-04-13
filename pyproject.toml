@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dicomtag"
 # version = "0.0.0"  # Version is managed by setuptools_scm
-description = "A Python tool for viewing and editing DICOM tags."
+description = "A simple DICOM tag editor based on PyQt6."
 authors = [
     { name = "Niels Bassler", email = "nbassler@users.noreply.github.com" },
 ]

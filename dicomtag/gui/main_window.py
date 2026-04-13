@@ -98,9 +98,9 @@ class MainWindow(QMainWindow):
     def _update_title(self):
         if self.dicom_data_model.filename:
             basename = os.path.basename(self.dicom_data_model.filename)
-            self.setWindowTitle(f"DICOM Tag Viewer {__version__} — {basename}")
+            self.setWindowTitle(f"DICOM Tag Editor {__version__} — {basename}")
         else:
-            self.setWindowTitle(f"DICOM Tag Viewer {__version__}")
+            self.setWindowTitle(f"DICOM Tag Editor {__version__}")
 
     def open_file(self):
         filename, _ = QFileDialog.getOpenFileName(
