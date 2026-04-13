@@ -40,7 +40,7 @@ class MainWindow(QMainWindow):
 
         # QTreeView for displaying DICOM tags
         self.tree_view = CustomTreeView()
-        self.tree_view.setRootIsDecorated(False)
+        self.tree_view.setRootIsDecorated(True)
         self.tree_view.setAlternatingRowColors(True)
         self.tree_view.setHorizontalScrollMode(
             QAbstractItemView.ScrollMode.ScrollPerPixel
