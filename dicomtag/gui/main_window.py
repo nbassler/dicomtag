@@ -21,7 +21,6 @@ class MainWindow(QMainWindow):
     def __init__(self, dicom_data_model):
         super().__init__()
         logger.debug("Initializing main window")
-        self.setWindowTitle(f"DICOM Tag Viewer {__version__}")
 
         # Use the DICOM data model passed from main
         self.dicom_data_model = dicom_data_model
@@ -29,6 +28,7 @@ class MainWindow(QMainWindow):
         # Set up the main layout and tree view
         self._setup_ui()
         self._setup_menu()
+        self._update_title()
 
     def _setup_ui(self):
         # Central widget
@@ -95,6 +95,13 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
+    def _update_title(self):
+        if self.dicom_data_model.filename:
+            basename = os.path.basename(self.dicom_data_model.filename)
+            self.setWindowTitle(f"DICOM Tag Viewer {__version__} — {basename}")
+        else:
+            self.setWindowTitle(f"DICOM Tag Viewer {__version__}")
+
     def open_file(self):
         filename, _ = QFileDialog.getOpenFileName(
             self, "Open DICOM File", "", "DICOM Files (*.dcm *.DCM);;All Files (*)"
@@ -102,9 +109,8 @@ class MainWindow(QMainWindow):
         if filename:
             logger.info(f"Loading DICOM file: {filename}")
             self.dicom_data_model.load_dicom_file(filename)
-
-            # Ensure that the model updates to reflect the new data
-            self.update_tree_model()  # Update the tree model to show new data
+            self.update_tree_model()
+            self._update_title()
 
     def update_tree_model(self):
         """Update the tree model to reflect changes in the DICOM data."""

@@ -7,7 +7,7 @@ _MAX_VALUE_LEN = 256
 
 
 class DICOMTreeItem:
-    def __init__(self, tag, element, parent: 'DICOMTreeItem' = None):
+    def __init__(self, tag, element, parent: 'DICOMTreeItem | None' = None):
         self.tag = tag
         self.element = element  # pydicom DataElement
         self.child_items = []
@@ -35,7 +35,7 @@ class DICOMTreeItem:
         item.parent_item = self
         self.child_items.append(item)
 
-    def child(self, row: int) -> 'DICOMTreeItem':
+    def child(self, row: int) -> 'DICOMTreeItem | None':
         """Get the child item at the specified row."""
         if row < 0 or row >= self.child_count():
             return None
