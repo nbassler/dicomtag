@@ -2,8 +2,8 @@
 # https://doc.qt.io/qtforpython-6/examples/example_widgets_itemviews_editabletreemodel.html
 import logging
 
-from PyQt6.QtCore import QAbstractItemModel, QModelIndex, Qt
-from PyQt6.QtWidgets import QTreeView, QLineEdit
+from PyQt6.QtCore import QAbstractItemModel, QModelIndex, Qt, QTimer
+from PyQt6.QtWidgets import QApplication, QTreeView, QLineEdit
 
 from dicomtag.gui.tree_item import DICOMTreeItem
 
@@ -20,11 +20,11 @@ class DICOMTreeModel(QAbstractItemModel):
 
     def update_model_data(self):
         """Clears and rebuilds the model data."""
-        self.beginResetModel()  # Notify view that a reset is starting
-        self.root_item.child_items = []  # Clear existing children
-        self._setup_model_data(
-            self.dicom_data_model.dicom_data, self.root_item)
-        self.endResetModel()  # Notify view that reset has completed
+        self.beginResetModel()
+        self.root_item.child_items = []
+        if self.dicom_data_model.dicom_data is not None:
+            self._setup_model_data(self.dicom_data_model.dicom_data, self.root_item)
+        self.endResetModel()
 
     def _setup_model_data(self, dataset, parent):
         """Recursively create DICOMTreeItem instances for each DICOM element."""
@@ -52,7 +52,7 @@ class DICOMTreeModel(QAbstractItemModel):
         return parent_item.child_count()
 
     def columnCount(self, parent=QModelIndex()):  # Mandatory # noqa: N802
-        return 3  # Tag, Value, VR
+        return 3  # Tag, VR, Value
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         """Return the data for the specified index and role."""
@@ -83,36 +83,34 @@ class DICOMTreeModel(QAbstractItemModel):
         if not parent_item:
             return QModelIndex()
 
-        child_item: DICOMTreeItem = parent_item.child(row)
+        child_item: DICOMTreeItem | None = parent_item.child(row)
         if child_item:
             return self.createIndex(row, column, child_item)
         return QModelIndex()
 
-    def parent(self, index):  # Mandatory
-        if not index.isValid():
+    def parent(self, child: QModelIndex) -> QModelIndex:  # type: ignore[override]
+        if not child.isValid():
             return QModelIndex()
 
-        child_item: DICOMTreeItem = self.get_item(index)
+        child_item: DICOMTreeItem | None = self.get_item(child)
         if child_item:
-            parent_item: DICOMTreeItem = child_item.parent()
+            parent_item: DICOMTreeItem | None = child_item.parent()
         else:
             parent_item = None
         if parent_item == self.root_item or not parent_item:
             return QModelIndex()
         return self.createIndex(parent_item.child_number(), 0, parent_item)
 
-    def flags(self, index: QModelIndex, role: int = None):
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
-        # Enable editing only for column 2 (Value) if it's not a sequence
         item = self.get_item(index)
-        if index.column() == 2 and not item.is_sequence():
+        if index.column() == 2 and item.element is not None and not item.is_sequence():
             return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable
-        # Non-editable for sequences
         return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
     # mandatory for editing
-    def setData(self, index: QModelIndex, value, role: int) -> bool:  # noqa: N802
+    def setData(self, index: QModelIndex, value, role: int = Qt.ItemDataRole.EditRole) -> bool:  # noqa: N802
         if role != Qt.ItemDataRole.EditRole:
             return False
 
@@ -125,30 +123,23 @@ class DICOMTreeModel(QAbstractItemModel):
 
         return result
 
-    # stictly also setHeaderData()
-
 
 class CustomTreeView(QTreeView):
     """Custom QTreeView subclass to enable single-click editing of the Value column only."""
 
-    def mousePressEvent(self, event):  # noqa: N802
-        index = self.indexAt(event.pos())
-        if index.isValid() and index.column() == 2:  # Check if it's column 2
-            self.edit(index)  # Start editing the cell directly
-            event.accept()  # Accept the event to prevent further processing
-        else:
-            super().mousePressEvent(event)  # Handle other clicks normally
+    def mousePressEvent(self, e):  # noqa: N802
+        # Call super first so the row gets selected/highlighted normally.
+        super().mousePressEvent(e)
+        assert e is not None
+        index = self.indexAt(e.pos())
+        if index.isValid() and index.column() == 2:
+            self.edit(index)
+            # Delegate editors are not accessible via indexWidget(); use a
+            # zero-delay timer to select all text once the editor has focus.
+            QTimer.singleShot(0, _select_all_in_focused_editor)
 
-    def edit(self, index, trigger=QTreeView.EditTrigger.DoubleClicked, event=None):
-        if not index.isValid():
-            return False  # Return False if the index is not valid
 
-        # Call the base edit method to open the editor
-        edit_success = super().edit(index, trigger, event)
-
-        # Ensure the editor has focus and select all text if editing was successful
-        editor = self.indexWidget(index)
-        if editor and isinstance(editor, QLineEdit):
-            editor.selectAll()  # Highlight all text in the editor
-
-        return edit_success  # Return whether the edit was successful
+def _select_all_in_focused_editor():
+    widget = QApplication.focusWidget()
+    if isinstance(widget, QLineEdit):
+        widget.selectAll()

@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -49,7 +49,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -60,8 +60,9 @@ jobs:
           pip install .
 
       - name: Build Executable
+        shell: bash
         run: |
-          pyinstaller --onefile --clean --name dicomtag.exe dicomtag/main.py
+          pyinstaller --onefile --clean --name dicomtag dicomtag/main.py
           mkdir -p dist/windows
           mv dist/dicomtag.exe dist/windows/
 
@@ -90,7 +91,7 @@ jobs:
           path: ./dist/windows
 
       - name: Create GitHub Release
-        id: create_release  # Ensure an ID is used to access outputs
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
