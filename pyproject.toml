@@ -29,8 +29,8 @@ entry_script = "dicomtag/main.py"
 output_dir = "dist"
 options = ["--onefile"]
 
-[tool.setuptools]
-packages = ["dicomtag"]
+[tool.setuptools.packages.find]
+where = ["."]
 
 [tool.pytest.ini_options]
 log_cli = true
