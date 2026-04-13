@@ -2,9 +2,17 @@
 
 import os
 import logging
-from PyQt6.QtWidgets import QMainWindow, QFileDialog, QTreeView, QVBoxLayout, QWidget, QAbstractItemView
+from PyQt6.QtWidgets import (
+    QMainWindow,
+    QFileDialog,
+    QTreeView,
+    QVBoxLayout,
+    QWidget,
+    QAbstractItemView,
+)
 from PyQt6.QtGui import QAction
-from dicomtag.gui.tree_model import DICOMTreeItem, DICOMTreeModel, CustomTreeView
+from dicomtag.gui.tree_model import DICOMTreeModel, CustomTreeView
+from dicomtag.__version__ import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +21,7 @@ class MainWindow(QMainWindow):
     def __init__(self, dicom_data_model):
         super().__init__()
         logger.debug("Initializing main window")
-        self.setWindowTitle("DICOM Tag Viewer")
+        self.setWindowTitle(f"DICOM Tag Viewer {__version__}")
 
         # Use the DICOM data model passed from main
         self.dicom_data_model = dicom_data_model
@@ -35,7 +43,8 @@ class MainWindow(QMainWindow):
         self.tree_view.setRootIsDecorated(False)
         self.tree_view.setAlternatingRowColors(True)
         self.tree_view.setHorizontalScrollMode(
-            QAbstractItemView.ScrollMode.ScrollPerPixel)
+            QAbstractItemView.ScrollMode.ScrollPerPixel
+        )
         self.tree_view.setAllColumnsShowFocus(True)
 
         # Set up the custom tree model for the QTreeView
@@ -51,6 +60,7 @@ class MainWindow(QMainWindow):
 
         # Prevent the last section from stretching
         header = self.tree_view.header()
+        assert header is not None
         header.setStretchLastSection(True)
 
         # Set the horizontal header to allow for scrollable content
@@ -58,14 +68,17 @@ class MainWindow(QMainWindow):
 
         # Enable editing on double-click or single click in column 2
         self.tree_view.setEditTriggers(
-            QTreeView.EditTrigger.DoubleClicked | QTreeView.EditTrigger.EditKeyPressed)
+            QTreeView.EditTrigger.DoubleClicked | QTreeView.EditTrigger.EditKeyPressed
+        )
 
         # Set default window size
         self.resize(800, 600)
 
     def _setup_menu(self):
         menubar = self.menuBar()
+        assert menubar is not None
         file_menu = menubar.addMenu("&File")
+        assert file_menu is not None
 
         # Create "Open" action
         open_action = QAction("&Open", self)
@@ -84,7 +97,8 @@ class MainWindow(QMainWindow):
 
     def open_file(self):
         filename, _ = QFileDialog.getOpenFileName(
-            self, "Open DICOM File", "", "DICOM Files (*.dcm);;All Files (*)")
+            self, "Open DICOM File", "", "DICOM Files (*.dcm *.DCM);;All Files (*)"
+        )
         if filename:
             logger.info(f"Loading DICOM file: {filename}")
             self.dicom_data_model.load_dicom_file(filename)
@@ -103,6 +117,10 @@ class MainWindow(QMainWindow):
     def save_as_file(self):
         original_filename = self.dicom_data_model.filename or "untitled.dcm"
         new_filename, _ = QFileDialog.getSaveFileName(
-            self, "Save DICOM File", f"{os.path.splitext(original_filename)[0]}_EDITED.dcm", "DICOM Files (*.dcm);;All Files (*)")
+            self,
+            "Save DICOM File",
+            f"{os.path.splitext(original_filename)[0]}_EDITED.dcm",
+            "DICOM Files (*.dcm *.DCM);;All Files (*)",
+        )
         if new_filename:
             self.dicom_data_model.save_dicom_file(new_filename)
