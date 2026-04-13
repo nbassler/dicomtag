@@ -18,7 +18,7 @@ dynamic = ["version"]
 dev = [
     "ruff>=0.4",
     "mypy>=0.971",
-    "pytest>=7.0",
+    "pytest>=9.0.3",
 ]
 
 [project.scripts]
