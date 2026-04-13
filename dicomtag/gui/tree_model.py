@@ -20,11 +20,11 @@ class DICOMTreeModel(QAbstractItemModel):
 
     def update_model_data(self):
         """Clears and rebuilds the model data."""
-        self.beginResetModel()  # Notify view that a reset is starting
-        self.root_item.child_items = []  # Clear existing children
-        self._setup_model_data(
-            self.dicom_data_model.dicom_data, self.root_item)
-        self.endResetModel()  # Notify view that reset has completed
+        self.beginResetModel()
+        self.root_item.child_items = []
+        if self.dicom_data_model.dicom_data is not None:
+            self._setup_model_data(self.dicom_data_model.dicom_data, self.root_item)
+        self.endResetModel()
 
     def _setup_model_data(self, dataset, parent):
         """Recursively create DICOMTreeItem instances for each DICOM element."""
@@ -101,14 +101,12 @@ class DICOMTreeModel(QAbstractItemModel):
             return QModelIndex()
         return self.createIndex(parent_item.child_number(), 0, parent_item)
 
-    def flags(self, index: QModelIndex, role: int = None):
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
-        # Enable editing only for column 2 (Value) if it's not a sequence
         item = self.get_item(index)
-        if index.column() == 2 and not item.is_sequence():
+        if index.column() == 2 and item.element is not None and not item.is_sequence():
             return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable
-        # Non-editable for sequences
         return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
     # mandatory for editing
