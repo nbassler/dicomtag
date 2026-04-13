@@ -50,6 +50,7 @@ class MainWindow(QMainWindow):
         # Set up the custom tree model for the QTreeView
         self.tree_model = DICOMTreeModel(self.dicom_data_model)
         self.tree_view.setModel(self.tree_model)
+        self.tree_model.dataChanged.connect(lambda *_: self.setWindowModified(True))
 
         # Add the tree view to the layout
         layout.addWidget(self.tree_view)
@@ -98,9 +99,10 @@ class MainWindow(QMainWindow):
     def _update_title(self):
         if self.dicom_data_model.filename:
             basename = os.path.basename(self.dicom_data_model.filename)
-            self.setWindowTitle(f"DICOM Tag Editor {__version__} — {basename}")
+            self.setWindowTitle(f"DICOM Tag Editor {__version__} — {basename}[*]")
         else:
-            self.setWindowTitle(f"DICOM Tag Editor {__version__}")
+            self.setWindowTitle(f"DICOM Tag Editor {__version__}[*]")
+        self.setWindowModified(False)
 
     def open_file(self):
         filename, _ = QFileDialog.getOpenFileName(
@@ -129,4 +131,5 @@ class MainWindow(QMainWindow):
             "DICOM Files (*.dcm *.DCM);;All Files (*)",
         )
         if new_filename:
-            self.dicom_data_model.save_dicom_file(new_filename)
+            if self.dicom_data_model.save_dicom_file(new_filename):
+                self.setWindowModified(False)
